@@ -19,6 +19,7 @@ In other word, Javac_Assistant.py calling Java compiler (javac) to compile Java 
 ##Usage
 ---
 
+***To be written***
 
 ##Support Platform
 ---
@@ -26,3 +27,12 @@ In other word, Javac_Assistant.py calling Java compiler (javac) to compile Java 
 - Windows
 - Mac OS X
 - Linux
+
+##Author
+---
+
+**LIN, CHE-WEI (John-Lin)**
+
+**Contact Me :** <ireri339@gmail.com>
+
+**My Blog :** <http://linton.logdown.com/>
