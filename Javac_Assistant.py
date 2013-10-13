@@ -44,15 +44,21 @@ class GUIDemo(Frame):
         
         menubar.add_cascade(label="Run", menu=RunMenu)
 
+        ToolsMenu = Menu(menubar, tearoff=0)
+        ToolsMenu.add_command(label="Source Code Pack into Folder", command=self.packMethod, accelerator="Command-p")
+        menubar.add_cascade(label="Tools", menu=ToolsMenu)
+        self.bind_all("<Command-p>", self.packMethod)
+
+
         HelpMenu = Menu(menubar, tearoff=0)
 
-        HelpMenu.add_command(label="About Java Builder", command=self.aboutMethod, accelerator="Command-i")
+        HelpMenu.add_command(label="About Javac Assistant", command=self.aboutMethod, accelerator="Command-i")
 
 
         self.bind_all("<Command-i>", self.aboutMethod)
         
         menubar.add_cascade(label="Help", menu=HelpMenu)
-
+        
         self.inputText = Label(self)
         self.inputText["text"] = "Input File Name"
         self.inputText.grid(row=0, column=0)
@@ -67,12 +73,21 @@ class GUIDemo(Frame):
         self.load["command"] = self.activeMethod
         self.bind_all("<Return>", self.activeMethod)
 
+        self.status = StringVar()
+        self.status.set("Status")
+        
         self.statusText = Label(self)
         self.statusText["text"] = "Status "
+        self.statusText["textvariable"] = self.status
         self.statusText.grid(row=1, column=0)
 
+
+        self.display = StringVar()
+        self.display.set("Something happened")
+        
         self.displayText = Label(self)
         self.displayText["text"] = "Something happened"
+        self.displayText["textvariable"] = self.display
         self.displayText.grid(row=1, column=1, columnspan=4)
 
 
@@ -118,32 +133,29 @@ class GUIDemo(Frame):
         fileMenu = Menu(menubar, tearoff=0)
         fileMenu.add_command(label="Open File...", command=self.askopenfilenameMethod, accelerator="Ctrl+O")
         fileMenu.add_command(label="Exit", command=self.quitMethod, accelerator="Ctrl+Q")
-        
-
-        
         self.bind_all("<Control-o>", self.askopenfilenameMethod)
         self.bind_all("<Control-q>", self.quitMethod)
-        
         menubar.add_cascade(label="File", menu=fileMenu)
 
+
         RunMenu = Menu(menubar, tearoff=0)
-        
         RunMenu.add_command(label="Run...", command=self.runMethod, accelerator="F6")
         RunMenu.add_command(label="Compile...", command=self.compileMethod, accelerator="F5")
-        
-        
         self.bind_all("<F6>", self.runMethod)
         self.bind_all("<F5>", self.compileMethod)
-        
-
         menubar.add_cascade(label="Run", menu=RunMenu)
 
+
+        ToolsMenu = Menu(menubar, tearoff=0)
+        ToolsMenu.add_command(label="Source Code Pack into Folder", command=self.packMethod, accelerator="Ctrl+P")
+        ToolsMenu.add_command(label="Clean All Java Bytecode" , command=self.cleanMethod)
+        menubar.add_cascade(label="Tools", menu=ToolsMenu)
+        self.bind_all("<Control-p>", self.packMethod)
+
+
         HelpMenu = Menu(menubar, tearoff=0)
-        HelpMenu.add_command(label="About Java Builder", command=self.aboutMethod, accelerator="F1")
-
+        HelpMenu.add_command(label="About Javac Assistant", command=self.aboutMethod, accelerator="F1")
         self.bind_all("<F1>", self.aboutMethod)
-        
-
         menubar.add_cascade(label="Help", menu=HelpMenu)
 
         self.inputText = Label(self)
@@ -207,7 +219,8 @@ class GUIDemo(Frame):
         
         if self.inputField.get():
             self.userinput = self.inputField.get()
-            self.statusText["text"] = "Status "
+            self.status.set("Status")
+            #self.statusText["text"] = "Status "
             
             if (self.var.get()) <= 1:
                 initTime = time.time()
@@ -218,10 +231,12 @@ class GUIDemo(Frame):
                 os.system('javac ' + self.userinput + '.java')
                 duringTime = time.time() - initTime
 
-            self.displayText["text"] = self.userinput + ".java has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds"
+            #self.displayText["text"] = self.userinput + ".java has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds"
+            self.display.set(self.userinput + ".java has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds")
         
         else:
-            self.statusText["text"] = "Status "
+            self.status.set("Status")
+            #self.statusText["text"] = "Status "
             
             if (self.var.get()) <=1 :
                 initTime = time.time()
@@ -233,8 +248,9 @@ class GUIDemo(Frame):
                 duringTime = time.time() - initTime
                 #print "Spent " + str(round(duringTime,2)) + " seconds"
 
-            self.displayText["text"] = self.userload.split('/')[-1] + " has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds"
-
+            #self.displayText["text"] = self.userload.split('/')[-1] + " has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds"
+            self.display.set(self.userload.split('/')[-1] + " has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds")
+    
     def runMethod(self, event=None):
         
         self.compileMethod()
@@ -247,7 +263,7 @@ class GUIDemo(Frame):
             else:
                 if os.path.exists('JavaCodes'):
                     os.system('java '+ '-classpath ' + 'JavaCodes ' + self.userinput)
-                else:
+                elif os.path.exists(self.userinput + '.java'):
                     os.system('java ' + self.userinput)
             #self.displayText["text"] = "Run " + self.userinput
         
@@ -257,18 +273,27 @@ class GUIDemo(Frame):
             else:
                 if os.path.exists('JavaCodes'):
                     os.system('java ' + '-classpath ' + 'JavaCodes ' + self.userload.split('/')[-1].split('.')[0])
-                else:
+                elif os.path.exists(self.userload.split('/')[-1]):
                     os.system('java ' + self.userload.split('/')[-1].split('.')[0])
+                else:
+                    bytecode = self.userload.split('/')[-1].split('.')[0]
+                    pathlist = self.userload.split('/')
+                    del pathlist[-1]
+                    path = '/'.join(pathlist)
+                    os.system('java ' + '-classpath ' + path + ' ' + bytecode)
+
             #self.displayText["text"] = "Run " + self.userload.split('/')[-1].split('.')[0]      
     
     def askopenfilenameMethod(self, event=None):
         self.userload = tkFileDialog.askopenfilename(**self.file_opt)
         
         if self.userload.split('.')[-1] == "java":
-            self.statusText["text"] = "Load... "
+            #self.statusText["text"] = "Load... "
+            self.status.set("Load ... ")
             self.run['state'] = 'active'
-            self.displayText["text"] = self.userload
-
+            #self.displayText["text"] = self.userload
+            self.display.set(self.userload)
+        
         elif self.userload == "":
             pass
 
@@ -281,7 +306,7 @@ class GUIDemo(Frame):
         self.run['state'] = 'disable'
         self.inputField.delete(0, END)
         self.displayText["text"] = "Now Terminal has been Cleared"
-        
+
         if platform.system() == 'Windows':
             os.system('cls')
         else:
@@ -296,17 +321,27 @@ class GUIDemo(Frame):
         else:
             tkMessageBox.showwarning(" Loading Error ","Can NOT Find " + self.inputField.get() + ".java")
 
+    def packMethod(self, event=None):
+        if not os.path.exists('JavaCodes'):
+            os.system('mkdir JavaCodes')
+            os.system('mv *.java ./JavaCodes')
+        else:
+            tkMessageBox.showinfo("Pack Information", "Packed Finished!")
+
+    def cleanMethod(self, event=None):
+        pass
+
     def quitMethod(self, event=None):
         root.quit()
     
     def aboutMethod(self, event=None):
-        tkMessageBox.showinfo("Java Builder", "Made by John-Lin\nMy Blog : http://linton.logdown.com/\nContact Me : ireri339@gmail.com")
+        tkMessageBox.showinfo("Javac Assistant", "Made by John-Lin\nMy Blog : http://linton.logdown.com/\nContact Me : ireri339@gmail.com")
 
     def EnvVarSet(self):
         tkMessageBox.showwarning(" Warning ","JDK Environment Variables Must be Set!")
 
 if __name__ == '__main__':
     root = Tk()
-    root.wm_title("Java Builder Beta")
+    root.wm_title("Javac Assistant Beta")
     app = GUIDemo(master=root)
     app.mainloop()
