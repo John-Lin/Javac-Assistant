@@ -4,6 +4,7 @@ import tkFileDialog
 import tkMessageBox
 import time
 import platform
+import thread
 
 class GUIDemo(Frame):
     def __init__(self, master=None):
@@ -100,6 +101,7 @@ class GUIDemo(Frame):
         self.R0["text"] = "Use Portable JDK"
         self.R0["variable"] = self.var
         self.R0["value"] = 1
+        self.R0["command"] = self.PortSet
         self.R0.grid(row=2, column=1)
         
 
@@ -107,10 +109,9 @@ class GUIDemo(Frame):
         self.R1["text"] = "Use Build-in JDK"
         self.R1["variable"] = self.var
         self.R1["value"] = 2
-        self.R1.grid(row=2, column=4)
         self.R1["command"] = self.EnvVarSet
         self.R1.select()
-
+        self.R1.grid(row=2, column=4)
 
         self.clear = Button(self)
         self.clear["text"] = " Clear "
@@ -120,7 +121,8 @@ class GUIDemo(Frame):
         self.run = Button(self, state=DISABLED)
         self.run["text"] = " Run "
         self.run.grid(row=3, column=2)
-        self.run["command"] =  self.runMethod
+        #self.run["command"] =  self.runMethod
+        self.run["command"] = self.runMethod
         
         self.exit = Button(self)
         self.exit["text"] = " Cancel "
@@ -200,6 +202,7 @@ class GUIDemo(Frame):
         self.R0["value"] = 1
         self.R0.grid(row=2, column=1)
         self.R0.select()
+        self.R0["command"] = self.PortSet
 
         self.R1 = Radiobutton(self)
         self.R1["text"] = "Use Build-in JDK"
@@ -237,9 +240,13 @@ class GUIDemo(Frame):
                 os.system('JDK7u15\\bin\\javac '+ 'JavaCodes\\' + self.userinput + '.java')
                 duringTime = time.time() - initTime
             else:
-                initTime = time.time()
-                os.system('javac ' + self.userinput + '.java')
-                duringTime = time.time() - initTime
+                tkMessageBox.showwarning(" Warning ",
+                    "This Entry Box Only Support Portable JDK!\nPlease Use Open File...")
+                #self.clearMethod()
+                return 
+                # initTime = time.time()
+                # os.system('javac ' + self.userinput + '.java')
+                # duringTime = time.time() - initTime
 
             #self.displayText["text"] = self.userinput + ".java has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds"
             self.display.set(self.userinput + ".java has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds")
@@ -269,22 +276,30 @@ class GUIDemo(Frame):
             self.userinput = self.inputField.get()
             
             if (self.var.get()) <= 1:
-                os.system('JDK7u15\\bin\\java ' + '-classpath ' + 'JavaCodes ' + self.userinput)
+                os.system('JDK7u15\\bin\\java ' + '-classpath ' + 'JavaCodes ' + self.userinput) 
             else:
-                if os.path.exists('JavaCodes'):
-                    os.system('java '+ '-classpath ' + 'JavaCodes ' + self.userinput)
-                elif os.path.exists(self.userinput + '.java'):
-                    os.system('java ' + self.userinput)
+                self.clearMethod()
+                self.askopenfilenameMethod()
+                return
+                # if os.path.exists('JavaCodes'):
+                #     os.system('java '+ '-classpath ' + 'JavaCodes ' + self.userinput)
+                # elif os.path.exists(self.userinput + '.java'):
+                #     os.system('java ' + self.userinput)
             #self.displayText["text"] = "Run " + self.userinput
         
         else:
-            if (self.var.get()) <= 1:
+            pathlist = self.userload.split('/')
+            
+            if (self.var.get()) <= 1 and 'JavaCodes' in pathlist :
                 os.system('JDK7u15\\bin\\java ' + '-classpath ' + 'JavaCodes ' + self.userload.split('/')[-1].split('.')[0])
             else:
-                if os.path.exists('JavaCodes'):
+                
+                if os.path.exists('JavaCodes') and 'JavaCodes' in pathlist :
                     os.system('java ' + '-classpath ' + 'JavaCodes ' + self.userload.split('/')[-1].split('.')[0])
+                    
                 elif os.path.exists(self.userload.split('/')[-1]):
                     os.system('java ' + self.userload.split('/')[-1].split('.')[0])
+
                 else:
                     bytecode = self.userload.split('/')[-1].split('.')[0]
                     pathlist = self.userload.split('/')
@@ -309,14 +324,15 @@ class GUIDemo(Frame):
 
         elif self.userload.split('.')[-1] != "java":
             tkMessageBox.showwarning("Loading Error", "Please Load Java Code!!")
+            self.askopenfilenameMethod()
     
     def clearMethod(self):
         self.userinput = ""
         self.userload = ""
         self.run['state'] = 'disable'
         self.inputField.delete(0, END)
-        self.displayText["text"] = "Now Terminal has been Cleared"
-
+        self.display.set("Now Terminal has been Cleared")
+        
         if platform.system() == 'Windows':
             os.system('cls')
         else:
@@ -337,22 +353,26 @@ class GUIDemo(Frame):
 
     def packMethod(self, event=None):
 
-        if self.findDirList(dst=".", extension='.java'):
-            if not os.path.exists('JavaCodes'):
-                os.mkdir('JavaCodes')
-                if platform.system() != "Windows":
-                    os.system('mv *.java ./JavaCodes')
-                else:
-                    os.system('MOVE *.java JavaCodes')
-            elif os.path.exists('JavaCodes'):
-                if platform.system() != "Windows":
-                    os.system('mv *.java ./JavaCodes')
-                else:
-                    os.system('MOVE *.java JavaCodes')
+        if self.findDirList(dst=".", extension='.java') and not os.path.exists('JavaCodes'):
+        #if not os.path.exists('JavaCodes'):
+            os.mkdir('JavaCodes')
+            if platform.system() != "Windows":
+                os.system('mv *.java ./JavaCodes')
+            else:
+                os.system('MOVE *.java JavaCodes')
 
+            tkMessageBox.showinfo("Pack Information", "New a JavaCodes Folder and \nSource Code had Moved into!")
+        
+        elif self.findDirList(dst=".", extension='.java') and os.path.exists('JavaCodes'):
+        #elif os.path.exists('JavaCodes'):
+            if platform.system() != "Windows":
+                os.system('mv *.java ./JavaCodes')
+            else:
+                os.system('MOVE *.java JavaCodes')
+        
             tkMessageBox.showinfo("Pack Information", "Move to JavaCodes folder!")
+        
         else:
-            tkMessageBox.showinfo("Pack Information", "Java source code is not found!")
             return
 
     def cleanMethod(self, event=None):
@@ -390,6 +410,9 @@ class GUIDemo(Frame):
 
     def EnvVarSet(self):
         tkMessageBox.showwarning(" Warning ","JDK Environment Variables Must be Set!")
+
+    def PortSet(self):
+        self.packMethod()
 
     def findDirList(self, dst , extension):
         dirList = os.listdir(dst)
