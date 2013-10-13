@@ -46,10 +46,10 @@ class GUIDemo(Frame):
 
         ToolsMenu = Menu(menubar, tearoff=0)
         ToolsMenu.add_command(label="Source Code Pack into Folder", command=self.packMethod, accelerator="Command-p")
-        ToolsMenu.add_command(label="Clean All Java Bytecode" , command=self.cleanMethod, accelerator="Command-c")
+        ToolsMenu.add_command(label="Clean All Java Bytecode" , command=self.cleanMethod, accelerator="Command-l")
         menubar.add_cascade(label="Tools", menu=ToolsMenu)
         self.bind_all("<Command-p>", self.packMethod)
-        self.bind_all("<Command-c>", self.cleanMethod)
+        self.bind_all("<Command-l>", self.cleanMethod)
 
 
         HelpMenu = Menu(menubar, tearoff=0)
@@ -79,7 +79,7 @@ class GUIDemo(Frame):
         self.status.set("Status")
         
         self.statusText = Label(self)
-        self.statusText["text"] = "Status "
+        #self.statusText["text"] = "Status "
         self.statusText["textvariable"] = self.status
         self.statusText.grid(row=1, column=0)
 
@@ -88,7 +88,7 @@ class GUIDemo(Frame):
         self.display.set("Something happened")
         
         self.displayText = Label(self)
-        self.displayText["text"] = "Something happened"
+        #self.displayText["text"] = "Something happened"
         self.displayText["textvariable"] = self.display
         self.displayText.grid(row=1, column=1, columnspan=4)
 
@@ -150,10 +150,10 @@ class GUIDemo(Frame):
 
         ToolsMenu = Menu(menubar, tearoff=0)
         ToolsMenu.add_command(label="Source Code Pack into Folder", command=self.packMethod, accelerator="Ctrl+P")
-        ToolsMenu.add_command(label="Clean All Java Bytecode" , command=self.cleanMethod, accelerator="Ctrl+C")
+        ToolsMenu.add_command(label="Clean All Java Bytecode" , command=self.cleanMethod, accelerator="Ctrl+L")
         menubar.add_cascade(label="Tools", menu=ToolsMenu)
         self.bind_all("<Control-p>", self.packMethod)
-        self.bind_all("<Control-c>", self.cleanMethod)
+        self.bind_all("<Control-l>", self.cleanMethod)
 
         HelpMenu = Menu(menubar, tearoff=0)
         HelpMenu.add_command(label="About Javac Assistant", command=self.aboutMethod, accelerator="F1")
@@ -174,12 +174,20 @@ class GUIDemo(Frame):
         self.load["command"] = self.activeMethod
         self.bind_all("<Return>", self.activeMethod)
 
+        self.status = StringVar()
+        self.status.set("Status")
+
         self.statusText = Label(self)
-        self.statusText["text"] = "Status "
+        self.statusText["textvariable"] = self.status
+        #self.statusText["text"] = "Status "
         self.statusText.grid(row=1, column=0)
 
+        self.display = StringVar()
+        self.display.set("Something happened")
+
         self.displayText = Label(self)
-        self.displayText["text"] = "Something happened"
+        #self.displayText["text"] = "Something happened"
+        self.displayText["textvariable"] = self.display
         self.displayText.grid(row=1, column=1, columnspan=4)
 
 
@@ -318,40 +326,61 @@ class GUIDemo(Frame):
         if os.path.exists(self.inputField.get() + ".java"):
         #if self.inputField.get():
             self.run['state'] = 'active'
+        elif os.path.exists("JavaCodes/" + self.inputField.get() + ".java"):
+            self.run['state'] = 'active'
+        elif os.path.exists("JavaCodes\\" + self.inputField.get() + ".java"):
+            self.run['state'] = 'active'
         elif self.inputField.get() == "":
             self.askopenfilenameMethod()
         else:
             tkMessageBox.showwarning(" Loading Error ","Can NOT Find " + self.inputField.get() + ".java")
 
     def packMethod(self, event=None):
-        if not os.path.exists('JavaCodes'):
-            os.mkdir('JavaCodes')
-            if platform.system() != "Windows":
-                os.system('mv *.java ./JavaCodes')
-            else:
-                os.system('MOVE *.java JavaCodes')
-        elif os.path.exists('JavaCodes'):
-            if platform.system() != "Windows":
-                os.system('mv *.java ./JavaCodes')
-            else:
-                os.system('MOVE *.java JavaCodes')
-        tkMessageBox.showinfo("Pack Information", "Packed Finished!")
+
+        if self.findDirList(dst=".", extension='.java'):
+            if not os.path.exists('JavaCodes'):
+                os.mkdir('JavaCodes')
+                if platform.system() != "Windows":
+                    os.system('mv *.java ./JavaCodes')
+                else:
+                    os.system('MOVE *.java JavaCodes')
+            elif os.path.exists('JavaCodes'):
+                if platform.system() != "Windows":
+                    os.system('mv *.java ./JavaCodes')
+                else:
+                    os.system('MOVE *.java JavaCodes')
+
+            tkMessageBox.showinfo("Pack Information", "Move to JavaCodes folder!")
+        else:
+            tkMessageBox.showinfo("Pack Information", "Java source code is not found!")
+            return
 
     def cleanMethod(self, event=None):
         result = tkMessageBox.askquestion("Delete Bytecode", "Bytecode will be Deleted! Are You Sure?", icon='warning')
         if result == 'yes':
-            if not os.path.exists('JavaCodes'):
-                if platform.system() != "Windows":
-                    os.system('rm -rf *.class')
-                else:
-                    os.system('del *.class')
-            else:
+
+            if self.findDirList(dst="./JavaCodes", extension='.class') and os.path.exists('JavaCodes'):
                 if platform.system() != "Windows":
                     os.system('rm -rf ./JavaCodes/*.class')
                 else:
                     os.system('del JavaCodes\\*.class')
-        else:
-            pass
+            
+            if self.findDirList(dst=".", extension='.class'):
+                if platform.system() != "Windows":
+                    os.system('rm -rf *.class')
+                else:
+                    os.system('del *.class')
+
+            # if not os.path.exists('JavaCodes'):
+            #     if platform.system() != "Windows":
+            #         os.system('rm -rf *.class')
+            #     else:
+            #         os.system('del *.class')
+            # else:
+            #     if platform.system() != "Windows":
+            #         os.system('rm -rf ./JavaCodes/*.class')
+            #     else:
+            #         os.system('del JavaCodes\\*.class')
 
     def quitMethod(self, event=None):
         root.quit()
@@ -361,6 +390,20 @@ class GUIDemo(Frame):
 
     def EnvVarSet(self):
         tkMessageBox.showwarning(" Warning ","JDK Environment Variables Must be Set!")
+
+    def findDirList(self, dst , extension):
+        dirList = os.listdir(dst)
+        exist = 0
+        for fname in dirList:
+            if fname.endswith(extension):
+                exist = exist + 1
+        
+        if exist > 0:
+            return True
+        else:
+            return False
+
+
 
 if __name__ == '__main__':
     root = Tk()
