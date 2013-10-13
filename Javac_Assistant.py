@@ -46,8 +46,10 @@ class GUIDemo(Frame):
 
         ToolsMenu = Menu(menubar, tearoff=0)
         ToolsMenu.add_command(label="Source Code Pack into Folder", command=self.packMethod, accelerator="Command-p")
+        ToolsMenu.add_command(label="Clean All Java Bytecode" , command=self.cleanMethod, accelerator="Command-c")
         menubar.add_cascade(label="Tools", menu=ToolsMenu)
         self.bind_all("<Command-p>", self.packMethod)
+        self.bind_all("<Command-c>", self.cleanMethod)
 
 
         HelpMenu = Menu(menubar, tearoff=0)
@@ -148,10 +150,10 @@ class GUIDemo(Frame):
 
         ToolsMenu = Menu(menubar, tearoff=0)
         ToolsMenu.add_command(label="Source Code Pack into Folder", command=self.packMethod, accelerator="Ctrl+P")
-        ToolsMenu.add_command(label="Clean All Java Bytecode" , command=self.cleanMethod)
+        ToolsMenu.add_command(label="Clean All Java Bytecode" , command=self.cleanMethod, accelerator="Ctrl+C")
         menubar.add_cascade(label="Tools", menu=ToolsMenu)
         self.bind_all("<Control-p>", self.packMethod)
-
+        self.bind_all("<Control-c>", self.cleanMethod)
 
         HelpMenu = Menu(menubar, tearoff=0)
         HelpMenu.add_command(label="About Javac Assistant", command=self.aboutMethod, accelerator="F1")
@@ -323,13 +325,33 @@ class GUIDemo(Frame):
 
     def packMethod(self, event=None):
         if not os.path.exists('JavaCodes'):
-            os.system('mkdir JavaCodes')
-            os.system('mv *.java ./JavaCodes')
-        else:
-            tkMessageBox.showinfo("Pack Information", "Packed Finished!")
+            os.mkdir('JavaCodes')
+            if platform.system() != "Windows":
+                os.system('mv *.java ./JavaCodes')
+            else:
+                os.system('MOVE *.java JavaCodes')
+        elif os.path.exists('JavaCodes'):
+            if platform.system() != "Windows":
+                os.system('mv *.java ./JavaCodes')
+            else:
+                os.system('MOVE *.java JavaCodes')
+        tkMessageBox.showinfo("Pack Information", "Packed Finished!")
 
     def cleanMethod(self, event=None):
-        pass
+        result = tkMessageBox.askquestion("Delete Bytecode", "Bytecode will be Deleted! Are You Sure?", icon='warning')
+        if result == 'yes':
+            if not os.path.exists('JavaCodes'):
+                if platform.system() != "Windows":
+                    os.system('rm -rf *.class')
+                else:
+                    os.system('del *.class')
+            else:
+                if platform.system() != "Windows":
+                    os.system('rm -rf ./JavaCodes/*.class')
+                else:
+                    os.system('del JavaCodes\\*.class')
+        else:
+            pass
 
     def quitMethod(self, event=None):
         root.quit()
