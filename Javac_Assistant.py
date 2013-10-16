@@ -121,7 +121,6 @@ class GUIDemo(Frame):
         self.run = Button(self, state=DISABLED)
         self.run["text"] = " Run "
         self.run.grid(row=3, column=2)
-        #self.run["command"] =  self.runMethod
         self.run["command"] = self.runMethod
         
         self.exit = Button(self)
@@ -248,9 +247,12 @@ class GUIDemo(Frame):
                 # os.system('javac ' + self.userinput + '.java')
                 # duringTime = time.time() - initTime
 
-            #self.displayText["text"] = self.userinput + ".java has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds"
+            ##self.displayText["text"] = self.userinput + ".java has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds"
+            
             self.display.set(self.userinput + ".java has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds")
-        
+            
+            #thread.start_new_thread(tkMessageBox.showinfo, ("Time Information", self.userinput + ".java has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds"))
+
         else:
             self.status.set("Status")
             #self.statusText["text"] = "Status "
@@ -265,9 +267,12 @@ class GUIDemo(Frame):
                 duringTime = time.time() - initTime
                 #print "Spent " + str(round(duringTime,2)) + " seconds"
 
-            #self.displayText["text"] = self.userload.split('/')[-1] + " has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds"
+            ##self.displayText["text"] = self.userload.split('/')[-1] + " has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds"
+            
             self.display.set(self.userload.split('/')[-1] + " has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds")
-    
+            
+            #thread.start_new_thread(tkMessageBox.showinfo, ("Time Information", self.userload.split('/')[-1] + " has been Compiled.\n"+"Spent " + str(round(duringTime,2)) + " seconds"))
+
     def runMethod(self, event=None):
         
         self.compileMethod()
@@ -426,10 +431,12 @@ class GUIDemo(Frame):
         else:
             return False
 
-
-
 if __name__ == '__main__':
     root = Tk()
     root.wm_title("Javac Assistant Beta")
     app = GUIDemo(master=root)
     app.mainloop()
+
+
+
+
